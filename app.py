@@ -13,6 +13,35 @@ VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
 PAGE_ACCESS_TOKEN = os.getenv("PAGE_ACCESS_TOKEN")
 
 
+# SEND MESSAGE
+
+def send_message(recipient_id, message_text):
+
+    url = "https://graph.facebook.com/v26.0/me/messages"
+
+    params = {
+        "access_token": PAGE_ACCESS_TOKEN
+    }
+
+    payload = {
+        "recipient": {
+            "id": recipient_id
+        },
+        "message": {
+            "text": message_text
+        }
+    }
+
+    response = requests.post(
+        url,
+        params=params,
+        json=payload
+    )
+
+    print("SEND MESSAGE STATUS:", response.status_code, flush=True)
+    print("SEND MESSAGE RESPONSE:", response.text, flush=True)
+
+
 # WEBHOOK VERIFICATION
 
 @app.route("/webhook", methods=["GET"])
@@ -23,7 +52,7 @@ def verify_webhook():
     challenge = request.args.get("hub.challenge")
 
     if mode == "subscribe" and token == VERIFY_TOKEN:
-        print("WEBHOOK VERIFIED")
+        print("WEBHOOK VERIFIED", flush=True)
         return challenge, 200
 
     return "Verification failed", 403
@@ -52,8 +81,29 @@ def receive_message():
                 message_text = message.get("text")
 
                 if message_text:
-                    print(f"Sender ID: {sender_id}", flush=True)
-                    print(f"Message: {message_text}", flush=True)
+
+                    print(
+                        f"Sender ID: {sender_id}",
+                        flush=True
+                    )
+
+                    print(
+                        f"Message: {message_text}",
+                        flush=True
+                    )
+
+                    # AUTOMATIC REPLY
+
+                    reply = (
+                        "Hello! 👋 Welcome to JCSGO Bagong Silangan Family Facebook Page!\n"
+                        "Thank you for reaching out to us. We’re happy to connect with you.\n\n"
+                        "Magandang araw! 🙏 Maligayang pagdating sa JCSGO Bagong Silangan Family Facebook Page!\n"
+                        "Salamat sa pag-message sa amin. Masaya kaming makausap kayo.\n\n"
+                        "How can we help you today? 😊\n"
+                        "Paano po namin kayo matutulungan?"
+                    )
+
+                    send_message(sender_id, reply)
 
     return "EVENT_RECEIVED", 200
 
@@ -62,11 +112,17 @@ def receive_message():
 
 @app.route("/")
 def home():
+
     return "JCSGO Messenger Bot is running!"
 
 
 # RUN SERVER
 
 if __name__ == "__main__":
+
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
