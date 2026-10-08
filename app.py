@@ -43,9 +43,9 @@ user_profiles = {}
 # AI MESSAGES
 
 AI_NOTICE = (
-    "\n\n"
-    "Paalala: Ang mensaheng ito ay awtomatikong sagot mula sa aming AI Assistant. "
-    "Para makausap ang aming technical team, i-type ang `OFF`."
+    "\n\n\n\n"
+    "𝖯𝖺𝖺𝗅𝖺𝗅𝖺: 𝖠𝗇𝗀 𝗆𝖾𝗇𝗌𝖺𝗁𝖾𝗇𝗀 𝗂𝗍𝗈 𝖺𝗒 𝖺𝗐𝗍𝗈𝗆𝖺𝗍𝗂𝗄𝗈𝗇𝗀 𝗌𝖺𝗀𝗈𝗍 𝗆𝗎𝗅𝖺 𝗌𝖺 𝖺𝗆𝗂𝗇𝗀 𝖠𝖨 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝗍. "
+    "𝖯𝖺𝗋𝖺 𝗆𝖺𝗄𝖺𝗎𝗌𝖺𝗉 𝖺𝗇𝗀 𝖺𝗆𝗂𝗇𝗀 𝗍𝖾𝖼𝗁𝗇𝗂𝖼𝖺𝗅 𝗍𝖾𝖺𝗆, 𝗂-𝗍𝗒𝗉𝖾 𝖺𝗇𝗀 `𝖮𝖥𝖥`."
 )
 
 AI_OFF_MESSAGE = (
