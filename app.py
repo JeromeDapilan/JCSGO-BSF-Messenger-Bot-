@@ -55,27 +55,14 @@ EMAIL = "jcsgobsmultimedia@gmail.com"
 # =========================================================
 # AI STATUS / CONVERSATION STATE
 # =========================================================
-#
-# Stores whether AI is ON or OFF for each Messenger user.
-#
-# True  = AI is active
-# False = AI is disabled / admin mode
-#
-# NOTE:
-# This is stored in memory and resets if Render restarts.
-# =========================================================
+
 
 user_ai_status = {}
 
 # =========================================================
 # FIRST MESSAGE TRACKING
 # =========================================================
-#
-# Stores users who already received the welcome information.
-#
-# NOTE:
-# This also resets if Render restarts.
-# =========================================================
+
 
 users_welcomed = set()
 
@@ -85,9 +72,9 @@ users_welcomed = set()
 
 AI_NOTICE = (
     "\n\n"
-    "Paalala: Ang mensaheng ito ay awtomatikong sagot "
-    "mula sa aming AI Assistant. Para makausap ang aming "
-    "technical team, i-type ang `OFF`."
+    "𝖯𝖺𝖺𝗅𝖺𝗅𝖺: 𝖠𝗇𝗀 𝗆𝖾𝗇𝗌𝖺𝗁𝖾𝗇𝗀 𝗂𝗍𝗈 𝖺𝗒 𝖺𝗐𝗍𝗈𝗆𝖺𝗍𝗂𝗄𝗈𝗇𝗀 𝗌𝖺𝗀𝗈𝗍 "
+    "𝗆𝗎𝗅𝖺 𝗌𝖺 𝖺𝗆𝗂𝗇𝗀 𝖠𝖨 𝖠𝗌𝗌𝗂𝗌𝗍𝖺𝗇𝗍. 𝖯𝖺𝗋𝖺 𝗆𝖺𝗄𝖺𝗎𝗌𝖺𝗉 𝖺𝗇𝗀 𝖺𝗆𝗂𝗇𝗀 "
+    "𝗍𝖾𝖼𝗁𝗇𝗂𝖼𝖺𝗅 𝗍𝖾𝖺𝗆, 𝗂-𝗍𝗒𝗉𝖾 𝖺𝗇𝗀 `𝖮𝖥𝖥`."
 )
 
 # =========================================================
@@ -126,7 +113,7 @@ Ipapasa ko na po kayo sa aming technical team. Pakihintay na lamang po. Maraming
 # AI ON MESSAGE
 # =========================================================
 
-AI_ON_MESSAGE = """AI Assistant is now ON. 🤖
+AI_ON_MESSAGE = """AI Assistant is now ON. 
 Maaari na po kayong magpatuloy sa inyong mga katanungan. 😊"""
 
 # =========================================================
@@ -733,7 +720,7 @@ def receive_message():
 def home():
 
     return (
-        "JCSGO Messenger Bot is running with GPT! 🤖"
+        "JCSGO Messenger Bot is running with GPT! "
     )
 
 # =========================================================
