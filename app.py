@@ -95,11 +95,8 @@ def receive_message():
                     # AUTOMATIC REPLY
 
                     reply = (
-                        "Hello! 👋 Welcome to JCSGO Bagong Silangan Family Facebook Page!\n"
-                        "Thank you for reaching out to us. We’re happy to connect with you.\n\n"
-                        "Magandang araw! 🙏 Maligayang pagdating sa JCSGO Bagong Silangan Family Facebook Page!\n"
-                        "Salamat sa pag-message sa amin. Masaya kaming makausap kayo.\n\n"
-                        "How can we help you today? 😊\n"
+                        "Mapagpalang araw! 🙏 Maligayang pagdating sa JCSGO Bagong Silangan Family Facebook Page!\n\n"
+                        "Salamat sa pag-message sa amin. Masaya kaming makausap kayo.\n\n\n"
                         "Paano po namin kayo matutulungan?"
                     )
 
