@@ -36,8 +36,8 @@ def receive_message():
 
     data = request.get_json()
 
-    print("\n===== NEW WEBHOOK EVENT =====")
-    print(data)
+    print("\n===== NEW WEBHOOK EVENT =====", flush=True)
+    print(data, flush=True)
 
     if data.get("object") == "page":
 
@@ -52,8 +52,8 @@ def receive_message():
                 message_text = message.get("text")
 
                 if message_text:
-                    print(f"Sender ID: {sender_id}")
-                    print(f"Message: {message_text}")
+                    print(f"Sender ID: {sender_id}", flush=True)
+                    print(f"Message: {message_text}", flush=True)
 
     return "EVENT_RECEIVED", 200
 
