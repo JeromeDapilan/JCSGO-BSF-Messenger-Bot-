@@ -133,7 +133,45 @@ def get_bot_response(message_text):
             "sumamba at makinig sa Salita ng Diyos. 🙏"
         )
 
+    
+    # ATTENDING CHURCH
+    
 
+    elif any(phrase in message for phrase in [
+        "pwede ba akong umattend",
+        "pwede ba ako umattend",
+        "pwede ba umattend",
+        "pwede ba sumama",
+        "pwede ba akong sumama",
+        "pwede ba pumunta",
+        "pwede ba akong pumunta",
+        "can i attend",
+        "can i attend your church",
+        "can i join",
+        "can i visit your church",
+        "may i attend",
+        "may i join",
+        "can i come to your church",
+        "can i go to your church"
+    ]):
+
+        return (
+            "Of course! ❤️ Everyone is welcome to attend our worship service. "
+            "You are welcome to join us, whether it is your first time or "
+            "you have attended before.\n\n"
+
+            "Oo naman po! ❤️ Malugod po kayong inaanyayahan na umattend "
+            "at makiisa sa aming worship service. Welcome po kayo kahit "
+            "first time ninyo o nakadalo na kayo dati.\n\n"
+
+            f"🕊️ Sunday Service: {SUNDAY_SERVICE}\n"
+            f"📍 Location: {CHURCH_ADDRESS}\n\n"
+
+            f"🗺️ Google Maps:\n{GOOGLE_MAPS}\n\n"
+
+            "We would be happy to worship with you! See you! 🙏"
+        )
+    
     
     # LOCATION
     
@@ -436,6 +474,9 @@ if __name__ == "__main__":
     )
 
     app.run(
+        host="0.0.0.0",
+        port=port
+    )
         host="0.0.0.0",
         port=port
     )
