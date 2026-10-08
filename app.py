@@ -8,7 +8,6 @@ load_dotenv()
 
 app = Flask(__name__)
 
-
 # =========================================================
 # CONFIGURATION
 # =========================================================
@@ -17,6 +16,14 @@ VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
 PAGE_ACCESS_TOKEN = os.getenv("PAGE_ACCESS_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+# =========================================================
+# ADMIN FACEBOOK USER IDS
+# =========================================================
+
+
+ADMIN_USER_IDS = {
+    "28617996561154585"
+}
 
 # =========================================================
 # OPENAI CLIENT
@@ -25,7 +32,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai_client = OpenAI(
     api_key=OPENAI_API_KEY
 )
-
 
 # =========================================================
 # CHURCH INFORMATION
@@ -46,18 +52,46 @@ FACEBOOK_PAGE = "JCSGO Bagong Silangan Family"
 
 EMAIL = "jcsgobsmultimedia@gmail.com"
 
+# =========================================================
+# AI STATUS / CONVERSATION STATE
+# =========================================================
+#
+# Stores whether AI is ON or OFF for each Messenger user.
+#
+# True  = AI is active
+# False = AI is disabled / admin mode
+#
+# NOTE:
+# This is stored in memory and resets if Render restarts.
+# =========================================================
+
+user_ai_status = {}
 
 # =========================================================
-# CONVERSATION MEMORY
+# FIRST MESSAGE TRACKING
+# =========================================================
+#
+# Stores users who already received the welcome information.
+#
+# NOTE:
+# This also resets if Render restarts.
 # =========================================================
 
-# Stores users who have already received the welcome information.
-# This resets if the Render server restarts.
 users_welcomed = set()
 
+# =========================================================
+# AI RESPONSE NOTICE
+# =========================================================
+
+AI_NOTICE = (
+    "\n\n"
+    "Paalala: Ang mensaheng ito ay awtomatikong sagot "
+    "mula sa aming AI Assistant. Para makausap ang aming "
+    "technical team, i-type ang `OFF`."
+)
 
 # =========================================================
-# FIRST MESSAGE / WELCOME INFORMATION
+# WELCOME MESSAGE
 # =========================================================
 
 WELCOME_MESSAGE = f"""Magandang araw! 🙏
@@ -81,6 +115,19 @@ Malugod po kayong inaanyayahan na makiisa sa aming worship service. ❤️
 
 Paano po namin kayo matutulungan?"""
 
+# =========================================================
+# OFF MESSAGE
+# =========================================================
+
+AI_OFF_MESSAGE = """AI Assistant is now OFF.
+Ipapasa ko na po kayo sa aming technical team. Pakihintay na lamang po. Maraming Salamat!"""
+
+# =========================================================
+# AI ON MESSAGE
+# =========================================================
+
+AI_ON_MESSAGE = """AI Assistant is now ON. 🤖
+Maaari na po kayong magpatuloy sa inyong mga katanungan. 😊"""
 
 # =========================================================
 # AI INSTRUCTIONS
@@ -90,7 +137,6 @@ SYSTEM_INSTRUCTIONS = f"""
 You are the official Messenger assistant of JCSGO Bagong Silangan Family.
 
 You are helping people through the church's Facebook Messenger.
-
 
 =========================================================
 OFFICIAL CHURCH INFORMATION
@@ -114,14 +160,12 @@ Facebook Page:
 Email:
 {EMAIL}
 
-
 =========================================================
 YOUR MAIN JOB
 =========================================================
 
 Answer people's questions about the church accurately,
 naturally, warmly, and briefly.
-
 
 =========================================================
 RESPONSE STYLE
@@ -144,7 +188,6 @@ RESPONSE STYLE
 
 8. You may use appropriate emojis such as:
    🙏 ❤️ 😊 📍 🕊️
-
 
 =========================================================
 EXAMPLES
@@ -191,7 +234,6 @@ User:
 
 Good answer:
 "Our Sunday Service starts at {SUNDAY_SERVICE}. 🕊️"
-
 
 =========================================================
 IMPORTANT RULES
@@ -249,6 +291,9 @@ makumpirma namin. 🙏"
 15. If the user asks for multiple pieces of information,
     answer all requested items but keep the response concise.
 
+16. NEVER include the AI notice yourself.
+    The application will automatically add the AI notice
+    after your response.
 
 =========================================================
 LANGUAGE
@@ -265,7 +310,6 @@ Answer in English.
 If the user mixes Filipino and English:
 Answer naturally in Taglish.
 
-
 =========================================================
 PRAYER REQUESTS
 =========================================================
@@ -278,7 +322,6 @@ Example:
 prayer request at nawa'y patuloy kayong palakasin ng Panginoon. ❤️"
 
 Do not claim that you personally prayed.
-
 
 =========================================================
 GREETING
@@ -300,7 +343,6 @@ Example:
 "Hello po! 🙏 Welcome to JCSGO Bagong Silangan Family.
 Paano po namin kayo matutulungan? 😊"
 """
-
 
 # =========================================================
 # SEND MESSAGE TO FACEBOOK MESSENGER
@@ -352,7 +394,6 @@ def send_message(recipient_id, message_text):
             flush=True
         )
 
-
 # =========================================================
 # GPT RESPONSE
 # =========================================================
@@ -391,6 +432,40 @@ def get_ai_response(message_text):
             "message ninyo. Pakisubukan po ulit. 🙏"
         )
 
+# =========================================================
+# CHECK ADMIN
+# =========================================================
+
+def is_admin(user_id):
+
+    return user_id in ADMIN_USER_IDS
+
+# =========================================================
+# GET AI STATUS
+# =========================================================
+
+def is_ai_enabled(user_id):
+
+    return user_ai_status.get(
+        user_id,
+        True
+    )
+
+# =========================================================
+# ADMIN COMMAND: /OFF
+# =========================================================
+
+def admin_turn_off(target_user_id):
+
+    user_ai_status[target_user_id] = False
+
+# =========================================================
+# ADMIN COMMAND: /ON
+# =========================================================
+
+def admin_turn_on(target_user_id):
+
+    user_ai_status[target_user_id] = True
 
 # =========================================================
 # WEBHOOK VERIFICATION
@@ -419,7 +494,6 @@ def verify_webhook():
 
     return "Verification failed", 403
 
-
 # =========================================================
 # RECEIVE MESSENGER EVENTS
 # =========================================================
@@ -442,7 +516,6 @@ def receive_message():
     if not data:
 
         return "EVENT_RECEIVED", 200
-
 
     if data.get("object") == "page":
 
@@ -467,12 +540,13 @@ def receive_message():
 
                 message_text = message.get("text")
 
+                # =================================================
+                # IGNORE EVENTS WITHOUT TEXT
+                # =================================================
 
-                # Ignore events without text
                 if not message_text or not sender_id:
 
                     continue
-
 
                 print(
                     f"Sender ID: {sender_id}",
@@ -484,6 +558,116 @@ def receive_message():
                     flush=True
                 )
 
+                # =================================================
+                # CLEAN MESSAGE
+                # =================================================
+
+                clean_message = message_text.strip()
+
+                upper_message = clean_message.upper()
+
+                # =================================================
+                # ADMIN COMMANDS
+                # =================================================
+                
+
+                if is_admin(sender_id):
+
+                    if upper_message == "/OFF":
+
+                        admin_turn_off(sender_id)
+
+                        reply = (
+                            "🔴 ADMIN MODE\n\n"
+                            "AI Assistant is now OFF for this "
+                            "conversation."
+                        )
+
+                        print(
+                            "ADMIN TURNED AI OFF",
+                            flush=True
+                        )
+
+                        send_message(
+                            sender_id,
+                            reply
+                        )
+
+                        continue
+
+                    if upper_message == "/ON":
+
+                        admin_turn_on(sender_id)
+
+                        reply = (
+                            "🟢 AI Assistant is now ON.\n\n"
+                            "Maaari na po kayong magpatuloy "
+                            "sa inyong mga katanungan. 😊"
+                        )
+
+                        print(
+                            "ADMIN TURNED AI ON",
+                            flush=True
+                        )
+
+                        send_message(
+                            sender_id,
+                            reply
+                        )
+
+                        continue
+
+                    if upper_message == "/STATUS":
+
+                        if is_ai_enabled(sender_id):
+
+                            status = "🟢 AI Assistant is ON."
+
+                        else:
+
+                            status = "🔴 AI Assistant is OFF."
+
+                        send_message(
+                            sender_id,
+                            status
+                        )
+
+                        continue
+
+                # =================================================
+                # CUSTOMER OFF COMMAND
+                # =================================================
+                
+
+                if upper_message == "OFF":
+
+                    user_ai_status[sender_id] = False
+
+                    print(
+                        "CUSTOMER REQUESTED HUMAN HANDOFF",
+                        flush=True
+                    )
+
+                    send_message(
+                        sender_id,
+                        AI_OFF_MESSAGE
+                    )
+
+                    continue
+
+                # =================================================
+                # IF AI IS OFF
+                # =================================================
+            
+
+                if not is_ai_enabled(sender_id):
+
+                    print(
+                        "AI IS OFF - MESSAGE IGNORED",
+                        flush=True
+                    )
+
+                    continue
 
                 # =================================================
                 # FIRST MESSAGE
@@ -496,12 +680,14 @@ def receive_message():
                         flush=True
                     )
 
-                    reply = WELCOME_MESSAGE
+                    reply = (
+                        WELCOME_MESSAGE
+                        + AI_NOTICE
+                    )
 
                     users_welcomed.add(
                         sender_id
                     )
-
 
                 # =================================================
                 # FOLLOW-UP MESSAGE
@@ -514,13 +700,17 @@ def receive_message():
                         flush=True
                     )
 
-                    reply = get_ai_response(
-                        message_text
+                    ai_reply = get_ai_response(
+                        clean_message
                     )
 
+                    reply = (
+                        ai_reply
+                        + AI_NOTICE
+                    )
 
                 # =================================================
-                # SEND REPLY
+                # SEND AI REPLY
                 # =================================================
 
                 print(
@@ -533,9 +723,7 @@ def receive_message():
                     reply
                 )
 
-
     return "EVENT_RECEIVED", 200
-
 
 # =========================================================
 # HOME
@@ -547,7 +735,6 @@ def home():
     return (
         "JCSGO Messenger Bot is running with GPT! 🤖"
     )
-
 
 # =========================================================
 # RUN SERVER
